@@ -76,13 +76,12 @@ dayTwoTaskOne fileName = (dayTwoParse fileName) >>= (putStrLn . show . dayTwoTas
 
 dayTwoTaskTwo' :: [Int] -> Maybe Int
 dayTwoTaskTwo' prog =
-  let subst = \noun verb p -> ((Intcode.setMemory 1 noun) . (Intcode.setMemory 2 verb)) p
-      permute = \noun verb p -> (noun, verb, subst noun verb prog)
+  let subst noun verb prog = ((Intcode.setMemory 1 noun) . (Intcode.setMemory 2 verb)) prog
+      permute noun verb prog = (noun, verb, subst noun verb prog)
       permutations = concatMap (\noun -> map (\verb -> permute noun verb prog) [1..99]) [1..99]
       results = map (\(n,v,prog) -> (n,v,Intcode.run prog)) permutations
       correctProg = List.find (\(_,_,res) -> res == 19690720) results in
     fmap (\(noun,verb,_) -> ((100 * noun) + verb)) correctProg
-    
 
 dayTwoTaskTwo fileName = (dayTwoParse fileName) >>= (putStrLn . (maybe "no result" show) . dayTwoTaskTwo')
 
