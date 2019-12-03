@@ -25,8 +25,7 @@ plot (Right n) = state $ \(x,y,d) -> ([ ((x + i, y), d + i) | i <- [1..n] ], (x 
 -- Plots a list of wire bits, starting at the origin (0,0)
 plotAll :: [Wire] -> Map.Map (Int,Int) Int
 plotAll wires =
-  let moves = map plot wires in
-    Map.fromList $ concat $ evalState (sequence moves) (0,0,0)
+  Map.fromList $ concat $ evalState (forM wires plot) (0,0,0)
 
 manhattanDistance :: (Int,Int) -> Int
 manhattanDistance (x,y) = (abs x) + (abs y)
