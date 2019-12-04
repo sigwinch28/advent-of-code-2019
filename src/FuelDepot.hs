@@ -5,20 +5,25 @@ digits n = reverse $ digits' n
   where digits' n | n < 10    = [n]
                   | otherwise = n `mod` 10 : digits' (n `div` 10)
 
-hasTwoAdjacentDigits xs = any id $ zipWith (==) xs (tail xs)
-
-hasExactlyTwoAdjacentDigits xs =
-  hasAdjacency && not hasDoubleAdjacency
-  where adjacencies = zipWith (==) xs (tail xs)
-        hasAdjacency = any id $ adjacencies
-        hasDoubleAdjacency = any id $ zipWith (&&) adjacencies (tail adjacencies)
+runs :: Ord a => [a] -> [[a]]
+runs [] = []
+runs (x:xs) = runs' x xs [x]
+  where
+    runs' _ [] acc = [acc]
+    runs' x (y:ys) acc =
+      if x == y then
+        runs' x ys (y:acc)
+      else
+        acc : (runs' y ys [y])
 
 isSorted xs = all id $ zipWith (<=) xs (tail xs)
 
 passwordCriteria n =
-  hasTwoAdjacentDigits xs && isSorted xs
+  isSorted xs && hasTwoGroup xs
   where xs = digits n
+        hasTwoGroup xs = any id $ map ((>= 2) . length) $ runs xs
 
 enhancedPasswordCriteria n =
-  hasExactlyTwoAdjacentDigits xs && isSorted xs
+  isSorted xs && hasExactlyTwoGroup xs
   where xs = digits n
+        hasExactlyTwoGroup xs = any id $ map ((== 2) . length) $ runs xs
