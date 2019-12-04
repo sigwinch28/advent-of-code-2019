@@ -7,8 +7,8 @@ import Data.List as List
 import Data.Functor ((<&>))
 import System.IO
 import qualified System.Environment as Env
-import qualified Data.Set as Set
-import qualified Data.Map.Strict as Map
+import qualified Data.HashSet as Set
+import qualified Data.HashMap.Strict as Map
 import Data.Maybe (fromMaybe)
 
 import qualified Fuel
