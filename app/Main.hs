@@ -133,7 +133,7 @@ dayFourParse [start,end] = (read start, read end)
 
 dayFourTaskOne' :: Int -> Int -> Int
 dayFourTaskOne' start end =
-  length $ filter FuelDepot.passwordCriteria [start..end]
+  length $ filter FuelDepot.groupCriteria (FuelDepot.passwordsInRange start end)
 
 dayFourTaskOne [] = dayFourTaskOne dayFourDefaultArgs
 dayFourTaskOne [startS,endS] =
@@ -143,7 +143,7 @@ dayFourTaskOne _ = putStrLn "Usage: 4 1 [start end]"
 
 dayFourTaskTwo' :: Int -> Int -> Int
 dayFourTaskTwo' start end =
-  length $ filter FuelDepot.enhancedPasswordCriteria [start..end]
+  length $ filter FuelDepot.enhancedGroupCriteria (FuelDepot.passwordsInRange start end)
 
 dayFourTaskTwo [] = dayFourTaskTwo dayFourDefaultArgs
 dayFourTaskTwo [startS,endS] =
