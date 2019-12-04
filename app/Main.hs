@@ -49,14 +49,14 @@ dayOneTaskOne' :: [Int] -> Int
 dayOneTaskOne' masses = sum $ map Fuel.fuelForMass masses
 
 dayOneTaskOne []         = dayOneTaskOne dayOneDefaultArgs
-dayOneTaskOne [fileName] = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskOne')
+dayOneTaskOne [fileName] = (dayOneParse fileName) >>= (print . dayOneTaskOne')
 dayOneTaskOne _          = putStrLn "Usage: 1 1 [filename]"
 
 dayOneTaskTwo' :: [Int] -> Int
 dayOneTaskTwo' masses = sum $ map Fuel.totalFuel masses
 
 dayOneTaskTwo []         = dayOneTaskTwo dayOneDefaultArgs
-dayOneTaskTwo [fileName] = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskTwo')
+dayOneTaskTwo [fileName] = (dayOneParse fileName) >>= (print . dayOneTaskTwo')
 dayOneTaskTwo _          = putStrLn "Usage: 1 2 [filename]"
 --
 -- Day Two
@@ -70,7 +70,7 @@ dayTwoTaskOne' :: [Int] -> Int
 dayTwoTaskOne' prog = Intcode.run prog
 
 dayTwoTaskOne []         = dayTwoTaskOne dayTwoDefaultArgs
-dayTwoTaskOne [fileName] = (dayTwoParse fileName) >>= (putStrLn . show . dayTwoTaskOne')
+dayTwoTaskOne [fileName] = (dayTwoParse fileName) >>= (print . dayTwoTaskOne')
 dayTwoTaskOne _          = putStrLn "Usage: 2 1 [filename]"
 
 dayTwoTaskTwo' :: [Int] -> Maybe Int
@@ -107,7 +107,7 @@ dayThreeTaskOne' a b =
     minimum distances
 
 dayThreeTaskOne []         = dayThreeTaskOne dayThreeDefaultArgs
-dayThreeTaskOne [fileName] = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskOne'))
+dayThreeTaskOne [fileName] = (dayThreeParse fileName) >>= (print . (uncurry dayThreeTaskOne'))
 dayThreeTaskOne _          = putStrLn "Usage: 3 1 [filename]"
 
 dayThreeTaskTwo' :: [FrontPanel.Wire] -> [FrontPanel.Wire] -> Int
@@ -119,7 +119,7 @@ dayThreeTaskTwo' a b =
 
 dayThreeTaskTwo :: [String] -> IO ()
 dayThreeTaskTwo []         = dayThreeTaskTwo dayThreeDefaultArgs
-dayThreeTaskTwo [fileName] = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskTwo'))
+dayThreeTaskTwo [fileName] = (dayThreeParse fileName) >>= (print . (uncurry dayThreeTaskTwo'))
 dayThreeTaskTwo _          = putStrLn "Usage: 3 2 [filename]"
 
 --
@@ -138,7 +138,7 @@ dayFourTaskOne' start end =
 dayFourTaskOne [] = dayFourTaskOne dayFourDefaultArgs
 dayFourTaskOne [startS,endS] =
   let (start, end) = dayFourParse [startS,endS] in
-    putStrLn $ show $ dayFourTaskOne' start end
+    print $ dayFourTaskOne' start end
 dayFourTaskOne _ = putStrLn "Usage: 4 1 [start end]"
 
 dayFourTaskTwo' :: Int -> Int -> Int
@@ -148,5 +148,5 @@ dayFourTaskTwo' start end =
 dayFourTaskTwo [] = dayFourTaskTwo dayFourDefaultArgs
 dayFourTaskTwo [startS,endS] =
   let (start, end) = dayFourParse [startS,endS] in
-    putStrLn $ show $ dayFourTaskTwo' start end
+    print $ dayFourTaskTwo' start end
 dayFourTaskTwo _ = putStrLn "Usage: 4 2 [start end]"
