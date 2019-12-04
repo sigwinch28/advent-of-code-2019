@@ -14,38 +14,31 @@ import Data.Maybe (fromMaybe)
 import qualified Fuel
 import qualified Intcode
 import qualified FrontPanel
+import qualified FuelDepot
 
 main :: IO ()
 main = do
   args <- Env.getArgs
   case args of
-    [dayRaw,taskRaw,filename] ->
-      let (day, task) = (read dayRaw, read taskRaw) in
-        dispatch day task filename
-    [dayRaw,taskRaw] ->
-      let (day, task) = (read dayRaw, read taskRaw)
-          filename = defaultFilename day task in
+    (dayS:(taskS:rest)) ->
+      let (day, task) = (read dayS, read taskS) in
         do
-          putStrLn $ "Using default filename " ++ filename
-          dispatch day task filename
-    _ -> putStrLn "Usage: day task [input-filename.txt]"
+          putStrLn $ "Running day " ++ dayS ++ " task " ++ taskS
+          dispatch day task rest
+    _ -> putStrLn "Usage: day task [task args]"
 
 openFileLazy :: String -> IO String
 openFileLazy fileName = openFile fileName ReadMode >>= hGetContents
 
-
-defaultFilename :: Int -> Int -> String
-defaultFilename 1 _ = "data/fuel-calculations/module-masses.txt"
-defaultFilename 2 _ = "data/intcode/gravity-assist.txt"
-defaultFilename 3 _ = "data/fuel-management/front-panel.txt"
-
-dispatch :: Int -> Int -> (String -> IO ())
+dispatch :: Int -> Int -> [String] -> IO ()
 dispatch 1 1 = dayOneTaskOne
 dispatch 1 2 = dayOneTaskTwo
 dispatch 2 1 = dayTwoTaskOne
 dispatch 2 2 = dayTwoTaskTwo
 dispatch 3 1 = dayThreeTaskOne
 dispatch 3 2 = dayThreeTaskTwo
+dispatch 4 1 = dayFourTaskOne
+dispatch 4 2 = dayFourTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -57,12 +50,16 @@ dayOneParse fileName = (openFileLazy fileName) <&> ( (map read) . lines )
 dayOneTaskOne' :: [Int] -> Int
 dayOneTaskOne' masses = sum $ map Fuel.fuelForMass masses
 
-dayOneTaskOne fileName = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskOne')
+dayOneTaskOne []         = dayOneTaskOne ["data/fuel-calculations/module-masses.txt"]
+dayOneTaskOne [fileName] = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskOne')
+dayOneTaskOne _          = putStrLn "too many arguments"
 
 dayOneTaskTwo' :: [Int] -> Int
 dayOneTaskTwo' masses = sum $ map Fuel.totalFuel masses
 
-dayOneTaskTwo fileName = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskTwo')
+dayOneTaskTwo []         = dayOneTaskTwo ["data/fuel-calculations/module-masses.txt"]
+dayOneTaskTwo [fileName] = (dayOneParse fileName) >>= (putStrLn . show . dayOneTaskTwo')
+dayOneTaskTwo _          = putStrLn "too many arguments"
 --
 -- Day Two
 --
@@ -72,7 +69,9 @@ dayTwoParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 dayTwoTaskOne' :: [Int] -> Int
 dayTwoTaskOne' prog = Intcode.run prog
 
-dayTwoTaskOne fileName = (dayTwoParse fileName) >>= (putStrLn . show . dayTwoTaskOne')
+dayTwoTaskOne []         = dayTwoTaskOne ["data/intcode/gravity-assist.txt"]
+dayTwoTaskOne [fileName] = (dayTwoParse fileName) >>= (putStrLn . show . dayTwoTaskOne')
+dayTwoTaskOne _          = putStrLn "too many arguments"
 
 dayTwoTaskTwo' :: [Int] -> Maybe Int
 dayTwoTaskTwo' prog =
@@ -83,7 +82,10 @@ dayTwoTaskTwo' prog =
       correctProg = List.find (\(_,_,res) -> res == 19690720) results in
     fmap (\(noun,verb,_) -> ((100 * noun) + verb)) correctProg
 
-dayTwoTaskTwo fileName = (dayTwoParse fileName) >>= (putStrLn . (maybe "no result" show) . dayTwoTaskTwo')
+dayTwoTaskTwo []         = dayTwoTaskTwo ["data/intcode/gravity-assist.txt"]
+dayTwoTaskTwo [fileName] = (dayTwoParse fileName) >>= (putStrLn . (maybe "no result" show) . dayTwoTaskTwo')
+dayTwoTaskTwo _          = putStrLn "too many arguments"
+
 
 --
 -- Day Three
@@ -102,7 +104,9 @@ dayThreeTaskOne' a b =
       distances = map FrontPanel.manhattanDistance intersections in
     minimum distances
 
-dayThreeTaskOne fileName = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskOne'))
+dayThreeTaskOne []         = dayThreeTaskOne ["data/fuel-management/front-panel.txt"]
+dayThreeTaskOne [fileName] = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskOne'))
+dayThreeTaskOne _          = putStrLn "too many arguments"
 
 dayThreeTaskTwo' :: [FrontPanel.Wire] -> [FrontPanel.Wire] -> Int
 dayThreeTaskTwo' a b =
@@ -111,4 +115,32 @@ dayThreeTaskTwo' a b =
       intersections = Map.intersectionWith (+) aPlot bPlot in
     minimum $ Map.elems intersections
 
-dayThreeTaskTwo fileName = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskTwo'))
+dayThreeTaskTwo :: [String] -> IO ()
+dayThreeTaskTwo []         = dayThreeTaskTwo ["data/fuel-management/front-panel.txt"]
+dayThreeTaskTwo [fileName] = (dayThreeParse fileName) >>= (putStrLn . show . (uncurry dayThreeTaskTwo'))
+dayThreeTaskTwo _          = putStrLn "too many arguments"
+
+--
+-- Day 4
+--
+
+dayFourParse :: [String] -> (Int,Int)
+dayFourParse [start,end] = (read start, read end)
+
+dayFourTaskOne' :: Int -> Int -> Int
+dayFourTaskOne' start end =
+  length $ filter FuelDepot.passwordCriteria [start..end]
+
+dayFourTaskOne [] = dayFourTaskOne ["278384","824795"]
+dayFourTaskOne [startS,endS] =
+  let (start, end) = dayFourParse [startS,endS] in
+    putStrLn $ show $ dayFourTaskOne' start end
+
+dayFourTaskTwo' :: Int -> Int -> Int
+dayFourTaskTwo' start end =
+  length $ filter FuelDepot.enhancedPasswordCriteria [start..end]
+
+dayFourTaskTwo [] = dayFourTaskTwo ["278384","824795"]
+dayFourTaskTwo [startS,endS] =
+  let (start, end) = dayFourParse [startS,endS] in
+    putStrLn $ show $ dayFourTaskTwo' start end
