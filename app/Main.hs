@@ -58,6 +58,7 @@ dayOneTaskTwo' masses = sum $ map Fuel.totalFuel masses
 dayOneTaskTwo []         = dayOneTaskTwo dayOneDefaultArgs
 dayOneTaskTwo [fileName] = (dayOneParse fileName) >>= (print . dayOneTaskTwo')
 dayOneTaskTwo _          = putStrLn "Usage: 1 2 [filename]"
+
 --
 -- Day Two
 --
@@ -150,3 +151,23 @@ dayFourTaskTwo [startS,endS] =
   let (start, end) = dayFourParse [startS,endS] in
     print $ dayFourTaskTwo' start end
 dayFourTaskTwo _ = putStrLn "Usage: 4 2 [start end]"
+
+--
+-- Day 5
+--
+
+dayFiveParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
+
+dayFiveTaskOne' :: [Int] -> Int
+dayFiveTaskOne' prog = last $ Intcode.runIO prog [1]
+
+dayFiveTaskOne []         = dayFiveTaskOne ["data/intcode/test.txt"]
+dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (putStrLn . show . dayFiveTaskOne')
+dayFiveTaskOne _          = putStrLn "too many arguments"
+
+dayFiveTaskTwo' :: [Int] -> Int
+dayFiveTaskTwo' prog = last $ Intcode.runIO prog [5]
+
+dayFiveTaskTwo []         = dayFiveTaskTwo ["data/intcode/test.txt"]
+dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (putStrLn . show . dayFiveTaskTwo')
+dayFiveTaskTwo _          = putStrLn "too many arguments"
