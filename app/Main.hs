@@ -3,6 +3,7 @@ module Main where
 import Lib
 import Parse
 
+import Data.Ord (comparing)
 import Data.List as List
 import Data.Functor ((<&>))
 import System.IO
@@ -15,6 +16,7 @@ import qualified Fuel
 import qualified Intcode
 import qualified FrontPanel
 import qualified FuelDepot
+import qualified Orbit
 
 main :: IO ()
 main = do
@@ -35,6 +37,9 @@ dispatch 3 1 = dayThreeTaskOne
 dispatch 3 2 = dayThreeTaskTwo
 dispatch 4 1 = dayFourTaskOne
 dispatch 4 2 = dayFourTaskTwo
+dispatch 5 1 = dayFiveTaskOne
+dispatch 5 2 = dayFiveTaskTwo
+dispatch 6 1 = daySixTaskOne
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -162,12 +167,33 @@ dayFiveTaskOne' :: [Int] -> Int
 dayFiveTaskOne' prog = last $ Intcode.runIO prog [1]
 
 dayFiveTaskOne []         = dayFiveTaskOne ["data/intcode/test.txt"]
-dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (putStrLn . show . dayFiveTaskOne')
-dayFiveTaskOne _          = putStrLn "too many arguments"
+dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskOne')
+dayFiveTaskOne _          = putStrLn "Usage: 5 1 [filename]"
 
 dayFiveTaskTwo' :: [Int] -> Int
 dayFiveTaskTwo' prog = last $ Intcode.runIO prog [5]
 
 dayFiveTaskTwo []         = dayFiveTaskTwo ["data/intcode/test.txt"]
-dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (putStrLn . show . dayFiveTaskTwo')
-dayFiveTaskTwo _          = putStrLn "too many arguments"
+dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskTwo')
+dayFiveTaskTwo _          = putStrLn "Usage: 5 2 [filename]"
+
+--
+-- Day 6
+--
+daySixParse fileName = (openFileLazy fileName) <&> ((map Orbit.parseOrbit) . lines)
+
+daySixTaskOne' orbits = length $ Orbit.allOrbits $ Orbit.fromList "COM" orbits
+
+daySixTaskOne []         = daySixTaskOne ["data/orbits/mercury.txt"]
+daySixTaskOne [fileName] = (daySixParse fileName) >>= (print . daySixTaskOne')
+daySixTaskOne _          = putStrLn "Usage: 6 1 [filename]"
+
+daySixTaskTwo' orbits = length youPath + length santaPath
+  where youPathCom = Orbit.pathBetweenDown "COM" "YOU" orbits
+        santaPathCom = Orbit.pathBetweenDown "COM" "SAN" orbits
+        (youPath, santaPath) = Orbit.stripGreatestCommonPrefix youPathCom santaPathCom
+
+daySixTaskTwo []         = daySixTaskTwo ["data/orbits/mercury.txt"]
+daySixTaskTwo [fileName] = (daySixParse fileName) >>= (print . daySixTaskTwo')
+daySixTaskTwo _          =  putStrLn "Usage: 6 2 [filename]"
+
