@@ -182,7 +182,7 @@ dayFiveTaskTwo _          = putStrLn "Usage: 5 2 [filename]"
 --
 daySixParse fileName = (openFileLazy fileName) <&> ((map Orbit.parseOrbit) . lines)
 
-daySixTaskOne' orbits = Orbit.totalDepth $ Orbit.fromList "COM" orbits
+daySixTaskOne' orbits = Orbit.totalOrbits "COM" orbits
 
 daySixTaskOne []         = daySixTaskOne ["data/orbits/mercury.txt"]
 daySixTaskOne [fileName] = (daySixParse fileName) >>= (print . daySixTaskOne')

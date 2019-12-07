@@ -6,17 +6,14 @@ type Body = String
 
 data OrbitMap = Node Body [OrbitMap] deriving Show
 
-parseOrbit :: String -> (String,String)
+parseOrbit :: String -> (Body,Body)
 parseOrbit orbitS = (com,body) where
   (com,')':body) = break (== ')')  orbitS
 
-fromList :: Body -> [(Body,Body)] -> OrbitMap
-fromList body orbits = Node body (map ((flip fromList) orbits) (directlyOrbiting body orbits))
-  where directlyOrbiting body orbits = map snd $ filter ((== body) . fst) orbits
-
-totalDepth :: OrbitMap -> Int
-totalDepth node = totalDepth' 0 node
-  where totalDepth' n (Node _ nodes) = n + sum (map (totalDepth' (n+1)) nodes)
+totalOrbits :: Body -> [(Body,Body)] -> Int
+totalOrbits root orbits = totalOrbits' 0 root
+  where totalOrbits' n root = n + sum (map (totalOrbits' (n+1)) (bodies root))
+        bodies root = map snd $ filter ((== root) . fst) orbits
 
 pathToRoot :: Body -> [(Body,Body)] -> [Body]
 pathToRoot body bodies = case find ((== body) . snd) bodies of
