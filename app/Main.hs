@@ -192,5 +192,19 @@ daySixTaskTwo' orbits = (\n -> n - 1) $ length $ Orbit.pathBetween "YOU" "SAN" o
 
 daySixTaskTwo []         = daySixTaskTwo ["data/orbits/mercury.txt"]
 daySixTaskTwo [fileName] = (daySixParse fileName) >>= (print . daySixTaskTwo')
-daySixTaskTwo _          =  putStrLn "Usage: 6 2 [filename]"
+daySixTaskTwo _          = putStrLn "Usage: 6 2 [filename]"
 
+--
+-- Day 7
+--
+daySevenDefaultArgs = ["data/intcode/gravity-assist.txt"]
+
+daySevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
+
+daySevenTaskOne' prog = fst $ maximumBy (comparing fst) $ map (\perm -> (runAmps perm, perm)) phasePerms
+  where runAmps phases = head $ foldl (\i n -> Intcode.runIO prog (n:i)) [0] phases
+        phasePerms = permutations [0..4]
+
+daySevenTaskOne [] = daySevenTaskOne ["data/intcode/thrusters.txt"]
+daySevenTaskOne [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskOne')
+daySevenTaskOne _ = putStrLn "Usage: 7 1 [filename]"
