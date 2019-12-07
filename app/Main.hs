@@ -1,22 +1,21 @@
 module Main where
 
-import Lib
 import Parse
-
-import Data.Ord (comparing)
-import Data.List as List
-import Data.Functor ((<&>))
-import System.IO
-import qualified System.Environment as Env
-import qualified Data.HashSet as Set
-import qualified Data.HashMap.Strict as Map
-import Data.Maybe (fromMaybe)
 
 import qualified Fuel
 import qualified Intcode
 import qualified FrontPanel
 import qualified FuelDepot
 import qualified Orbit
+
+import Data.Functor ((<&>))
+import qualified Data.HashSet as Set
+import qualified Data.HashMap.Strict as Map
+import Data.List as List
+import Data.Ord (comparing)
+
+import qualified System.Environment as Env
+import System.IO
 
 main :: IO ()
 main = do
@@ -40,6 +39,7 @@ dispatch 4 2 = dayFourTaskTwo
 dispatch 5 1 = dayFiveTaskOne
 dispatch 5 2 = dayFiveTaskTwo
 dispatch 6 1 = daySixTaskOne
+dispatch 6 2 = daySixTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -182,16 +182,13 @@ dayFiveTaskTwo _          = putStrLn "Usage: 5 2 [filename]"
 --
 daySixParse fileName = (openFileLazy fileName) <&> ((map Orbit.parseOrbit) . lines)
 
-daySixTaskOne' orbits = length $ Orbit.allOrbits $ Orbit.fromList "COM" orbits
+daySixTaskOne' orbits = Orbit.totalDepth $ Orbit.fromList "COM" orbits
 
 daySixTaskOne []         = daySixTaskOne ["data/orbits/mercury.txt"]
 daySixTaskOne [fileName] = (daySixParse fileName) >>= (print . daySixTaskOne')
 daySixTaskOne _          = putStrLn "Usage: 6 1 [filename]"
 
-daySixTaskTwo' orbits = length youPath + length santaPath
-  where youPathCom = Orbit.pathBetweenDown "COM" "YOU" orbits
-        santaPathCom = Orbit.pathBetweenDown "COM" "SAN" orbits
-        (youPath, santaPath) = Orbit.stripGreatestCommonPrefix youPathCom santaPathCom
+daySixTaskTwo' orbits = (\n -> n - 1) $ length $ Orbit.pathBetween "YOU" "SAN" orbits
 
 daySixTaskTwo []         = daySixTaskTwo ["data/orbits/mercury.txt"]
 daySixTaskTwo [fileName] = (daySixParse fileName) >>= (print . daySixTaskTwo')
