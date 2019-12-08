@@ -24,6 +24,7 @@ dependencies:
 - mtl
 - containers
 - unordered-containers
+- split
 
 library:
   source-dirs: src

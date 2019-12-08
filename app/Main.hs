@@ -7,6 +7,7 @@ import qualified Intcode
 import qualified FrontPanel
 import qualified FuelDepot
 import qualified Orbit
+import qualified SpaceImage
 
 import Control.Monad.State as State
 import Data.Functor ((<&>))
@@ -43,6 +44,8 @@ dispatch 6 1 = daySixTaskOne
 dispatch 6 2 = daySixTaskTwo
 dispatch 7 1 = daySevenTaskOne
 dispatch 7 2 = daySevenTaskTwo
+dispatch 8 1 = dayEightTaskOne
+dispatch 8 2 = dayEightTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -162,13 +165,15 @@ dayFourTaskTwo _ = putStrLn "Usage: 4 2 [start end]"
 -- Day 5
 --
 
+dayFiveDefaultArgs = ["data/intcode/test.txt"]
+
 dayFiveParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
 dayFiveTaskOne' :: [Int] -> Int
 dayFiveTaskOne' prog = last $ snd $ State.evalState run (prog, 0)
   where run = Intcode.stepUntilInput >>= Intcode.putInput 1 >> Intcode.stepUntilInput
 
-dayFiveTaskOne []         = dayFiveTaskOne ["data/intcode/test.txt"]
+dayFiveTaskOne []         = dayFiveTaskOne dayFiveDefaultArgs
 dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskOne')
 dayFiveTaskOne _          = putStrLn "Usage: 5 1 [filename]"
 
@@ -176,31 +181,34 @@ dayFiveTaskTwo' :: [Int] -> Int
 dayFiveTaskTwo' prog = last $ snd $ State.evalState run (prog, 0)
   where run = Intcode.stepUntilInput >>= Intcode.putInput 5 >> Intcode.stepUntilInput
 
-dayFiveTaskTwo []         = dayFiveTaskTwo ["data/intcode/test.txt"]
+dayFiveTaskTwo []         = dayFiveTaskTwo dayFiveDefaultArgs
 dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskTwo')
 dayFiveTaskTwo _          = putStrLn "Usage: 5 2 [filename]"
 
 --
 -- Day 6
 --
+
+daySixDefaultArgs = ["data/orbits/mercury.txt"]
+
 daySixParse fileName = (openFileLazy fileName) <&> ((map Orbit.parseOrbit) . lines)
 
 daySixTaskOne' orbits = Orbit.totalOrbits "COM" orbits
 
-daySixTaskOne []         = daySixTaskOne ["data/orbits/mercury.txt"]
+daySixTaskOne []         = daySixTaskOne daySixDefaultArgs
 daySixTaskOne [fileName] = (daySixParse fileName) >>= (print . daySixTaskOne')
 daySixTaskOne _          = putStrLn "Usage: 6 1 [filename]"
 
 daySixTaskTwo' orbits = (\n -> n - 1) $ length $ Orbit.pathBetween "YOU" "SAN" orbits
 
-daySixTaskTwo []         = daySixTaskTwo ["data/orbits/mercury.txt"]
+daySixTaskTwo []         = daySixTaskTwo daySixDefaultArgs
 daySixTaskTwo [fileName] = (daySixParse fileName) >>= (print . daySixTaskTwo')
 daySixTaskTwo _          = putStrLn "Usage: 6 2 [filename]"
 
 --
 -- Day 7
 --
-daySevenDefaultArgs = ["data/intcode/gravity-assist.txt"]
+daySevenDefaultArgs = ["data/intcode/thrusters.txt"]
 
 daySevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
@@ -210,7 +218,7 @@ daySevenTaskOne' prog = maximum $ map runAmps perms
         run inputs = snd $ State.evalState (Intcode.stepUntilInput >>= Intcode.stepWithInputs inputs) (prog,0)
         perms = permutations [0..4]
 
-daySevenTaskOne [] = daySevenTaskOne ["data/intcode/thrusters.txt"]
+daySevenTaskOne [] = daySevenTaskOne daySevenDefaultArgs
 daySevenTaskOne [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskOne')
 daySevenTaskOne _ = putStrLn "Usage: 7 1 [filename]"
 
@@ -226,6 +234,28 @@ daySevenTaskTwo' prog = maximum $ map (head . (runUntilHalt [0]) . initAmps) per
         runAmps' inputs ((sig,st):amps) acc = runAmps' outputs amps ((sig',amp):acc)
           where ((sig',outputs),amp) = State.runState (Intcode.stepWithInputs inputs (sig,[])) st
 
-daySevenTaskTwo [] = daySevenTaskTwo ["data/intcode/thrusters.txt"]
+daySevenTaskTwo [] = daySevenTaskTwo daySevenDefaultArgs
 daySevenTaskTwo [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskTwo')
 daySevenTaskTwo _ = putStrLn "Usage: 7 1 [filename]"
+
+--
+-- Day 8
+--
+
+dayEightDefaultArgs = ["data/images/bios-password.txt","25","6"]
+
+dayEightParse fileName = (openFileLazy fileName) <&> (head . lines)
+
+dayEightTaskOne' width height image = calcResult $ snd $ minimumBy (comparing fst) $ zip (map (countInstances SpaceImage.Black) layers) layers
+  where layers = SpaceImage.parseImage width height image
+        calcResult layer = (countInstances SpaceImage.White layer) * (countInstances SpaceImage.Transparent layer)
+        countInstances pix layer = length $ concatMap (filter (== pix)) layer
+
+dayEightTaskOne [] = dayEightTaskOne dayEightDefaultArgs
+dayEightTaskOne [fileName,width,height] = (dayEightParse fileName) >>= (print . dayEightTaskOne' (read width) (read height))
+
+dayEightTaskTwo' width height image = SpaceImage.showLayer $ SpaceImage.flattenImage $ SpaceImage.parseImage width height image
+
+dayEightTaskTwo [] = dayEightTaskTwo dayEightDefaultArgs
+dayEightTaskTwo [fileName,width,height] = (dayEightParse fileName) >>= (putStr . dayEightTaskTwo' (read width) (read height))
+
