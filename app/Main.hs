@@ -8,6 +8,7 @@ import qualified FrontPanel
 import qualified FuelDepot
 import qualified Orbit
 
+import Control.Monad.State as State
 import Data.Functor ((<&>))
 import qualified Data.HashSet as Set
 import qualified Data.HashMap.Strict as Map
@@ -40,6 +41,8 @@ dispatch 5 1 = dayFiveTaskOne
 dispatch 5 2 = dayFiveTaskTwo
 dispatch 6 1 = daySixTaskOne
 dispatch 6 2 = daySixTaskTwo
+dispatch 7 1 = daySevenTaskOne
+dispatch 7 2 = daySevenTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -73,25 +76,23 @@ dayTwoDefaultArgs = ["data/intcode/gravity-assist.txt"]
 dayTwoParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
 dayTwoTaskOne' :: [Int] -> Int
-dayTwoTaskOne' prog = Intcode.run prog
+dayTwoTaskOne' prog = head $ fst $ State.execState Intcode.stepUntilInput (prog,0)
 
 dayTwoTaskOne []         = dayTwoTaskOne dayTwoDefaultArgs
 dayTwoTaskOne [fileName] = (dayTwoParse fileName) >>= (print . dayTwoTaskOne')
 dayTwoTaskOne _          = putStrLn "Usage: 2 1 [filename]"
 
 dayTwoTaskTwo' :: [Int] -> Maybe Int
-dayTwoTaskTwo' prog =
-  let subst noun verb prog = ((Intcode.setMemory 1 noun) . (Intcode.setMemory 2 verb)) prog
-      permute noun verb prog = (noun, verb, subst noun verb prog)
-      permutations = concatMap (\noun -> map (\verb -> permute noun verb prog) [1..99]) [1..99]
-      results = map (\(n,v,prog) -> (n,v,Intcode.run prog)) permutations
-      correctProg = List.find (\(_,_,res) -> res == 19690720) results in
-    fmap (\(noun,verb,_) -> ((100 * noun) + verb)) correctProg
+dayTwoTaskTwo' prog = fmap (\(noun,verb,_) -> ((100 * noun) + verb)) correctProg
+  where subst noun verb prog = head prog : ( [noun,verb] ++ (drop 3 prog))
+        permute noun verb prog = (noun, verb, subst noun verb prog)
+        permutations = concatMap (\noun -> map (\verb -> permute noun verb prog) [1..99]) [1..99]
+        results = map (\(n,v,prog) -> (n,v, head $ fst $ State.execState Intcode.stepUntilInput (prog,0))) permutations
+        correctProg = List.find (\(_,_,res) -> res == 19690720) results
 
 dayTwoTaskTwo []         = dayTwoTaskTwo dayTwoDefaultArgs
 dayTwoTaskTwo [fileName] = (dayTwoParse fileName) >>= (putStrLn . (maybe "no result" show) . dayTwoTaskTwo')
 dayTwoTaskTwo _          = putStrLn "Usage: 2 2 [filename]"
-
 
 --
 -- Day Three
@@ -164,14 +165,16 @@ dayFourTaskTwo _ = putStrLn "Usage: 4 2 [start end]"
 dayFiveParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
 dayFiveTaskOne' :: [Int] -> Int
-dayFiveTaskOne' prog = last $ Intcode.runIO prog [1]
+dayFiveTaskOne' prog = last $ snd $ State.evalState run (prog, 0)
+  where run = Intcode.stepUntilInput >>= Intcode.putInput 1 >> Intcode.stepUntilInput
 
 dayFiveTaskOne []         = dayFiveTaskOne ["data/intcode/test.txt"]
 dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskOne')
 dayFiveTaskOne _          = putStrLn "Usage: 5 1 [filename]"
 
 dayFiveTaskTwo' :: [Int] -> Int
-dayFiveTaskTwo' prog = last $ Intcode.runIO prog [5]
+dayFiveTaskTwo' prog = last $ snd $ State.evalState run (prog, 0)
+  where run = Intcode.stepUntilInput >>= Intcode.putInput 5 >> Intcode.stepUntilInput
 
 dayFiveTaskTwo []         = dayFiveTaskTwo ["data/intcode/test.txt"]
 dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskTwo')
@@ -201,10 +204,28 @@ daySevenDefaultArgs = ["data/intcode/gravity-assist.txt"]
 
 daySevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-daySevenTaskOne' prog = fst $ maximumBy (comparing fst) $ map (\perm -> (runAmps perm, perm)) phasePerms
-  where runAmps phases = head $ foldl (\i n -> Intcode.runIO prog (n:i)) [0] phases
-        phasePerms = permutations [0..4]
+daySevenTaskOne' :: [Int] -> Int
+daySevenTaskOne' prog = maximum $ map runAmps perms
+  where runAmps phases = head $ foldl (\i n -> run (n:i)) [0] phases
+        run inputs = snd $ State.evalState (Intcode.stepUntilInput >>= Intcode.stepWithInputs inputs) (prog,0)
+        perms = permutations [0..4]
 
 daySevenTaskOne [] = daySevenTaskOne ["data/intcode/thrusters.txt"]
 daySevenTaskOne [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskOne')
 daySevenTaskOne _ = putStrLn "Usage: 7 1 [filename]"
+
+--daySevenTaskTwo' :: [Int] -> Int
+daySevenTaskTwo' prog = maximum $ map (head . (runUntilHalt [0]) . initAmps) perms
+  where perms = permutations [5..9]
+        initAmps perms = map initAmp perms
+        initAmp perm = (\((sig,_),st) -> (sig,st)) $ State.runState (Intcode.stepUntilInput >>= Intcode.stepWithInputs [perm]) (prog,0)
+        runUntilHalt inputs ((Intcode.Halted,_):_) = inputs
+        runUntilHalt inputs amps = let (amps',outputs) = runAmps inputs amps in runUntilHalt outputs amps'
+        runAmps inputs amps = runAmps' inputs amps []
+        runAmps' inputs [] acc = (reverse acc, inputs)
+        runAmps' inputs ((sig,st):amps) acc = runAmps' outputs amps ((sig',amp):acc)
+          where ((sig',outputs),amp) = State.runState (Intcode.stepWithInputs inputs (sig,[])) st
+
+daySevenTaskTwo [] = daySevenTaskTwo ["data/intcode/thrusters.txt"]
+daySevenTaskTwo [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskTwo')
+daySevenTaskTwo _ = putStrLn "Usage: 7 1 [filename]"
