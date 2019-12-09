@@ -46,6 +46,7 @@ dispatch 7 2 = daySevenTaskTwo
 dispatch 8 1 = dayEightTaskOne
 dispatch 8 2 = dayEightTaskTwo
 dispatch 9 1 = dayNineTaskOne
+dispatch 9 2 = dayNineTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -170,14 +171,14 @@ dayFiveDefaultArgs = ["data/intcode/test.txt"]
 dayFiveParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
 dayFiveTaskOne' :: [Int] -> Int
-dayFiveTaskOne' prog = last $ Intcode.run [1] (prog,0,0)
+dayFiveTaskOne' prog = last $ Intcode.runProg [1] prog
 
 dayFiveTaskOne []         = dayFiveTaskOne dayFiveDefaultArgs
 dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskOne')
 dayFiveTaskOne _          = putStrLn "Usage: 5 1 [filename]"
 
 dayFiveTaskTwo' :: [Int] -> Int
-dayFiveTaskTwo' prog = last $ Intcode.run [5] (prog,0,0)
+dayFiveTaskTwo' prog = last $ Intcode.runProg [5] prog
 
 dayFiveTaskTwo []         = dayFiveTaskTwo dayFiveDefaultArgs
 dayFiveTaskTwo [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskTwo')
@@ -213,7 +214,7 @@ daySevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimite
 daySevenTaskOne' :: [Int] -> Int
 daySevenTaskOne' prog = maximum $ map runAmps perms
   where runAmps phases = head $ foldl (\i n -> run (n:i)) [0] phases
-        run inputs = Intcode.run inputs (prog,0,0)
+        run inputs = Intcode.runProg inputs prog
         perms = permutations [0..4]
 
 daySevenTaskOne [] = daySevenTaskOne daySevenDefaultArgs
@@ -224,11 +225,11 @@ daySevenTaskTwo' :: [Int] -> Int
 daySevenTaskTwo' prog = maximum $ map runAmps perms
   where perms = permutations [5..9]
         runAmps [p0,p1,p2,p3,p4] = last outE
-          where outA = Intcode.run (p0:0:outE) (prog,0,0)
-                outB = Intcode.run (p1:outA)   (prog,0,0)
-                outC = Intcode.run (p2:outB)   (prog,0,0)
-                outD = Intcode.run (p3:outC)   (prog,0,0)
-                outE = Intcode.run (p4:outD)   (prog,0,0)
+          where outA = Intcode.runProg (p0:0:outE) prog
+                outB = Intcode.runProg (p1:outA)   prog
+                outC = Intcode.runProg (p2:outB)   prog
+                outD = Intcode.runProg (p3:outC)   prog
+                outE = Intcode.runProg (p4:outD)   prog
 
 daySevenTaskTwo [] = daySevenTaskTwo daySevenDefaultArgs
 daySevenTaskTwo [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskTwo')
@@ -263,12 +264,12 @@ dayNineDefaultArgs = ["data/intcode/boost.txt"]
 
 dayNineParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-dayNineTaskOne' prog = last $ Intcode.run [1] (prog ++ repeat 0, 0, 0)
+dayNineTaskOne' prog = last $ Intcode.runProg [1] prog
 
 dayNineTaskOne [] = dayNineTaskOne dayNineDefaultArgs
 dayNineTaskOne [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskOne')
 
-dayNineTaskTwo' prog = last $ Intcode.run [2] (prog ++ repeat 0, 0, 0)
+dayNineTaskTwo' prog = last $ Intcode.runProg [2] prog
 
 dayNineTaskTwo [] = dayNineTaskTwo dayNineDefaultArgs
 dayNineTaskTwo [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskTwo')

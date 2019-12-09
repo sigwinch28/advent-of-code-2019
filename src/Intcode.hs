@@ -1,6 +1,6 @@
 module Intcode where
 
-data State = State { mem :: [Int], ptr :: Int, base :: Int }
+import qualified Data.Map.Strict as Map
 
 data Mode = Immediate | Position | Relative deriving (Show)
 
@@ -55,10 +55,14 @@ runMem (mem,ptr) =
       Halt ->
         (mem, ptr)
 
-run :: [Int] -> ([Int],Int,Int) -> [Int]
+runProg :: [Int] -> [Int] -> [Int]
+runProg inputs prog = run inputs (Map.fromList (zip [0..] prog),0,0)
+
+run :: [Int] -> (Map.Map Int Int,Int,Int) -> [Int]
 run inputs (mem,ptr,base) =
-  let (op,modes) = parseOp (getMem ptr mem)
-      load addr = getMem addr mem
+  let load addr = Map.findWithDefault 0 addr mem
+      (op,modes) = parseOp (load ptr)
+      setMem addr val mem = Map.insert addr val mem
       getArg n = case modes !! (n-1) of
                    Position -> load $ load (ptr + n)
                    Immediate -> load (ptr+n)
