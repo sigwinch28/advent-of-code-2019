@@ -8,6 +8,7 @@ import qualified FrontPanel
 import qualified FuelDepot
 import qualified Orbit
 import qualified SpaceImage
+import qualified Asteroid
 
 import Data.Functor ((<&>))
 import qualified Data.HashSet as Set
@@ -273,3 +274,24 @@ dayNineTaskTwo' prog = last $ Intcode.runProg [2] prog
 
 dayNineTaskTwo [] = dayNineTaskTwo dayNineDefaultArgs
 dayNineTaskTwo [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskTwo')
+
+--
+-- Day 10
+--
+
+dayTenDefaultArgs = ["data/asteroids/station.txt"]
+
+dayTenParse fileName = (openFileLazy fileName) <&> (Asteroid.parseMap)
+
+dayTenTaskOne' :: Asteroid.S -> Int
+dayTenTaskOne' m = snd $ Asteroid.maxVisibility m
+
+dayTenTaskOne [] = dayTenTaskOne dayTenDefaultArgs
+dayTenTaskOne [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskOne')
+
+dayTenTaskTwo' m = (100*x) + y
+  where station = fst $ Asteroid.maxVisibility m
+        (x,y) = (Asteroid.vaporise station m) !! (200-1)
+
+dayTenTaskTwo [] = dayTenTaskTwo dayTenDefaultArgs
+dayTenTaskTwo [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskTwo')
