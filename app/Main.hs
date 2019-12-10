@@ -48,6 +48,8 @@ dispatch 8 1 = dayEightTaskOne
 dispatch 8 2 = dayEightTaskTwo
 dispatch 9 1 = dayNineTaskOne
 dispatch 9 2 = dayNineTaskTwo
+dispatch 10 1 = dayTenTaskOne
+dispatch 10 2 = dayTenTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
