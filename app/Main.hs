@@ -60,14 +60,12 @@ dayOneDefaultArgs = ["data/fuel-calculations/module-masses.txt"]
 
 dayOneParse fileName = (openFileLazy fileName) <&> ( (map read) . lines )
 
-dayOneTaskOne' :: [Int] -> Int
 dayOneTaskOne' masses = sum $ map Fuel.fuelForMass masses
 
 dayOneTaskOne []         = dayOneTaskOne dayOneDefaultArgs
 dayOneTaskOne [fileName] = (dayOneParse fileName) >>= (print . dayOneTaskOne')
 dayOneTaskOne _          = putStrLn "Usage: 1 1 [filename]"
 
-dayOneTaskTwo' :: [Int] -> Int
 dayOneTaskTwo' masses = sum $ map Fuel.totalFuel masses
 
 dayOneTaskTwo []         = dayOneTaskTwo dayOneDefaultArgs
@@ -82,14 +80,12 @@ dayTwoDefaultArgs = ["data/intcode/gravity-assist.txt"]
 
 dayTwoParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-dayTwoTaskOne' :: [Int] -> Int
 dayTwoTaskOne' prog = head $ fst $ Intcode.runMem (prog,0)
 
 dayTwoTaskOne []         = dayTwoTaskOne dayTwoDefaultArgs
 dayTwoTaskOne [fileName] = (dayTwoParse fileName) >>= (print . dayTwoTaskOne')
 dayTwoTaskOne _          = putStrLn "Usage: 2 1 [filename]"
 
-dayTwoTaskTwo' :: [Int] -> Maybe Int
 dayTwoTaskTwo' prog = fmap (\(noun,verb,_) -> ((100 * noun) + verb)) correctProg
   where subst noun verb prog = head prog : ( [noun,verb] ++ (drop 3 prog))
         permute noun verb prog = (noun, verb, subst noun verb prog)
@@ -112,7 +108,6 @@ dayThreeParse fileName = do
   let [wireOne, wireTwo] = map ((map FrontPanel.parseWire) . commaDelimited) $ lines contents in
     return (wireOne, wireTwo)
 
-dayThreeTaskOne' :: [FrontPanel.Wire] -> [FrontPanel.Wire] -> Int
 dayThreeTaskOne' a b =
   let aCoords = Map.keysSet $ FrontPanel.plotAll a
       bCoords = Map.keysSet $ FrontPanel.plotAll b
@@ -124,7 +119,6 @@ dayThreeTaskOne []         = dayThreeTaskOne dayThreeDefaultArgs
 dayThreeTaskOne [fileName] = (dayThreeParse fileName) >>= (print . (uncurry dayThreeTaskOne'))
 dayThreeTaskOne _          = putStrLn "Usage: 3 1 [filename]"
 
-dayThreeTaskTwo' :: [FrontPanel.Wire] -> [FrontPanel.Wire] -> Int
 dayThreeTaskTwo' a b =
   let aPlot = FrontPanel.plotAll a
       bPlot = FrontPanel.plotAll b
@@ -142,28 +136,20 @@ dayThreeTaskTwo _          = putStrLn "Usage: 3 2 [filename]"
 
 dayFourDefaultArgs = ["278384","842795"]
 
-dayFourParse :: [String] -> (Int,Int)
 dayFourParse [start,end] = (read start, read end)
 
-dayFourTaskOne' :: Int -> Int -> Int
-dayFourTaskOne' start end =
-  length $ filter FuelDepot.groupCriteria (FuelDepot.passwordsInRange start end)
+dayFourTaskOne' start end =  length $ filter FuelDepot.groupCriteria (FuelDepot.passwordsInRange start end)
 
-dayFourTaskOne [] = dayFourTaskOne dayFourDefaultArgs
-dayFourTaskOne [startS,endS] =
-  let (start, end) = dayFourParse [startS,endS] in
-    print $ dayFourTaskOne' start end
-dayFourTaskOne _ = putStrLn "Usage: 4 1 [start end]"
+dayFourTaskOne []            = dayFourTaskOne dayFourDefaultArgs
+dayFourTaskOne [startS,endS] = print $ (uncurry dayFourTaskOne') $ dayFourParse [startS,endS]
+dayFourTaskOne _             = putStrLn "Usage: 4 1 [start end]"
 
-dayFourTaskTwo' :: Int -> Int -> Int
 dayFourTaskTwo' start end =
   length $ filter FuelDepot.enhancedGroupCriteria (FuelDepot.passwordsInRange start end)
 
-dayFourTaskTwo [] = dayFourTaskTwo dayFourDefaultArgs
-dayFourTaskTwo [startS,endS] =
-  let (start, end) = dayFourParse [startS,endS] in
-    print $ dayFourTaskTwo' start end
-dayFourTaskTwo _ = putStrLn "Usage: 4 2 [start end]"
+dayFourTaskTwo []            = dayFourTaskTwo dayFourDefaultArgs
+dayFourTaskTwo [startS,endS] = print $ (uncurry dayFourTaskTwo') $ dayFourParse [startS,endS]
+dayFourTaskTwo _             = putStrLn "Usage: 4 2 [start end]"
 
 --
 -- Day 5
@@ -173,14 +159,12 @@ dayFiveDefaultArgs = ["data/intcode/test.txt"]
 
 dayFiveParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-dayFiveTaskOne' :: [Int] -> Int
 dayFiveTaskOne' prog = last $ Intcode.runProg [1] prog
 
 dayFiveTaskOne []         = dayFiveTaskOne dayFiveDefaultArgs
 dayFiveTaskOne [fileName] = (dayFiveParse fileName) >>= (print . dayFiveTaskOne')
 dayFiveTaskOne _          = putStrLn "Usage: 5 1 [filename]"
 
-dayFiveTaskTwo' :: [Int] -> Int
 dayFiveTaskTwo' prog = last $ Intcode.runProg [5] prog
 
 dayFiveTaskTwo []         = dayFiveTaskTwo dayFiveDefaultArgs
@@ -214,17 +198,15 @@ daySevenDefaultArgs = ["data/intcode/thrusters.txt"]
 
 daySevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-daySevenTaskOne' :: [Int] -> Int
 daySevenTaskOne' prog = maximum $ map runAmps perms
   where runAmps phases = head $ foldl (\i n -> run (n:i)) [0] phases
         run inputs = Intcode.runProg inputs prog
         perms = permutations [0..4]
 
-daySevenTaskOne [] = daySevenTaskOne daySevenDefaultArgs
+daySevenTaskOne []         = daySevenTaskOne daySevenDefaultArgs
 daySevenTaskOne [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskOne')
-daySevenTaskOne _ = putStrLn "Usage: 7 1 [filename]"
+daySevenTaskOne _          = putStrLn "Usage: 7 1 [filename]"
 
-daySevenTaskTwo' :: [Int] -> Int
 daySevenTaskTwo' prog = maximum $ map runAmps perms
   where perms = permutations [5..9]
         runAmps [p0,p1,p2,p3,p4] = last outE
@@ -234,9 +216,9 @@ daySevenTaskTwo' prog = maximum $ map runAmps perms
                 outD = Intcode.runProg (p3:outC)   prog
                 outE = Intcode.runProg (p4:outD)   prog
 
-daySevenTaskTwo [] = daySevenTaskTwo daySevenDefaultArgs
+daySevenTaskTwo []         = daySevenTaskTwo daySevenDefaultArgs
 daySevenTaskTwo [fileName] = (daySevenParse fileName) >>= (print . daySevenTaskTwo')
-daySevenTaskTwo _ = putStrLn "Usage: 7 1 [filename]"
+daySevenTaskTwo _          = putStrLn "Usage: 7 1 [filename]"
 
 --
 -- Day 8
@@ -251,13 +233,15 @@ dayEightTaskOne' width height image = calcResult $ snd $ minimumBy (comparing fs
         calcResult layer = (countInstances SpaceImage.White layer) * (countInstances SpaceImage.Transparent layer)
         countInstances pix layer = length $ concatMap (filter (== pix)) layer
 
-dayEightTaskOne [] = dayEightTaskOne dayEightDefaultArgs
+dayEightTaskOne []                      = dayEightTaskOne dayEightDefaultArgs
 dayEightTaskOne [fileName,width,height] = (dayEightParse fileName) >>= (print . dayEightTaskOne' (read width) (read height))
+dayEightTaskOne _                       = putStrLn "Usage: 8 1 [filename width height]"
 
 dayEightTaskTwo' width height image = SpaceImage.showLayer $ SpaceImage.flattenImage $ SpaceImage.parseImage width height image
 
-dayEightTaskTwo [] = dayEightTaskTwo dayEightDefaultArgs
+dayEightTaskTwo []                      = dayEightTaskTwo dayEightDefaultArgs
 dayEightTaskTwo [fileName,width,height] = (dayEightParse fileName) >>= (putStr . dayEightTaskTwo' (read width) (read height))
+dayEightTaskTwo _                       = putStrLn "Usage: 8 2 [filename width height]"
 
 --
 -- Day 9
@@ -269,12 +253,12 @@ dayNineParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited
 
 dayNineTaskOne' prog = last $ Intcode.runProg [1] prog
 
-dayNineTaskOne [] = dayNineTaskOne dayNineDefaultArgs
+dayNineTaskOne []         = dayNineTaskOne dayNineDefaultArgs
 dayNineTaskOne [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskOne')
 
 dayNineTaskTwo' prog = last $ Intcode.runProg [2] prog
 
-dayNineTaskTwo [] = dayNineTaskTwo dayNineDefaultArgs
+dayNineTaskTwo []         = dayNineTaskTwo dayNineDefaultArgs
 dayNineTaskTwo [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskTwo')
 
 --
@@ -285,15 +269,14 @@ dayTenDefaultArgs = ["data/asteroids/station.txt"]
 
 dayTenParse fileName = (openFileLazy fileName) <&> (Asteroid.parseMap)
 
-dayTenTaskOne' :: Asteroid.S -> Int
 dayTenTaskOne' m = snd $ Asteroid.maxVisibility m
 
-dayTenTaskOne [] = dayTenTaskOne dayTenDefaultArgs
+dayTenTaskOne []         = dayTenTaskOne dayTenDefaultArgs
 dayTenTaskOne [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskOne')
 
 dayTenTaskTwo' m = (100*x) + y
   where station = fst $ Asteroid.maxVisibility m
         (x,y) = (Asteroid.vaporise station m) !! (200-1)
 
-dayTenTaskTwo [] = dayTenTaskTwo dayTenDefaultArgs
+dayTenTaskTwo []         = dayTenTaskTwo dayTenDefaultArgs
 dayTenTaskTwo [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskTwo')

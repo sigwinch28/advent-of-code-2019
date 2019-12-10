@@ -7,8 +7,7 @@ import Data.Ord (comparing)
 import qualified Data.Set as Set
 
 type Coord = (Int,Int)
-type S = Set.Set Coord
-
+type Map = Set.Set Coord
 
 parseMap :: String -> Set.Set Coord
 parseMap str = Set.fromList $ catMaybes $ indexMap $ lines str
@@ -19,16 +18,16 @@ parseMap str = Set.fromList $ catMaybes $ indexMap $ lines str
 
 maxVisibility m = maximumBy (comparing snd) (visibilities m)
 
-visibilities :: Set.Set Coord -> [(Coord,Int)]
+visibilities :: Map -> [(Coord,Int)]
 visibilities m = map (\c -> (c,countVisible c m)) $ Set.toList m
 
-countVisible :: Coord -> Set.Set Coord -> Int
+countVisible :: Coord -> Map -> Int
 countVisible from m = Set.size $ visibleFrom from m
 
-visibleFrom :: Coord -> Set.Set Coord -> Set.Set Coord
+visibleFrom :: Coord -> Map -> Map
 visibleFrom from m = Set.delete from $ Set.filter (\to -> isVisible from to m) m
 
-isVisible :: Coord -> Coord -> Set.Set Coord -> Bool
+isVisible :: Coord -> Coord -> Map -> Bool
 isVisible (x1,y1) (x2,y2) m =
   case divisor of
     1 -> True
@@ -37,7 +36,9 @@ isVisible (x1,y1) (x2,y2) m =
         divisor = gcd dx dy
         (sx,sy) = (dx `div` divisor, dy `div` divisor)
 
-vaporise from m = if Set.null m then [] else sweep from (Set.toList visible) ++ vaporise from (Set.difference m visible)
+vaporise :: Coord -> Map -> [Coord]
+vaporise from m | Set.null m = []
+                | otherwise  = sweep from (Set.toList visible) ++ vaporise from (Set.difference m visible)
   where visible = visibleFrom from m
 
 sweep :: Coord -> [Coord] -> [Coord]
