@@ -9,10 +9,12 @@ import qualified FuelDepot
 import qualified Orbit
 import qualified SpaceImage
 import qualified Asteroid
+import qualified HullPainter
 
 import Data.Functor ((<&>))
+import qualified Data.Map.Strict as Map
 import qualified Data.HashSet as Set
-import qualified Data.HashMap.Strict as Map
+import qualified Data.HashMap.Strict as HMap
 import Data.List as List
 import Data.Ord (comparing)
 
@@ -109,8 +111,8 @@ dayThreeParse fileName = do
     return (wireOne, wireTwo)
 
 dayThreeTaskOne' a b =
-  let aCoords = Map.keysSet $ FrontPanel.plotAll a
-      bCoords = Map.keysSet $ FrontPanel.plotAll b
+  let aCoords = HMap.keysSet $ FrontPanel.plotAll a
+      bCoords = HMap.keysSet $ FrontPanel.plotAll b
       intersections = Set.toList $ Set.intersection aCoords bCoords
       distances = map FrontPanel.manhattanDistance intersections in
     minimum distances
@@ -122,8 +124,8 @@ dayThreeTaskOne _          = putStrLn "Usage: 3 1 [filename]"
 dayThreeTaskTwo' a b =
   let aPlot = FrontPanel.plotAll a
       bPlot = FrontPanel.plotAll b
-      intersections = Map.intersectionWith (+) aPlot bPlot in
-    minimum $ Map.elems intersections
+      intersections = HMap.intersectionWith (+) aPlot bPlot in
+    minimum $ HMap.elems intersections
 
 dayThreeTaskTwo :: [String] -> IO ()
 dayThreeTaskTwo []         = dayThreeTaskTwo dayThreeDefaultArgs
@@ -280,3 +282,25 @@ dayTenTaskTwo' m = (100*x) + y
 
 dayTenTaskTwo []         = dayTenTaskTwo dayTenDefaultArgs
 dayTenTaskTwo [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskTwo')
+
+--
+-- Day 11robotOuts
+--
+
+dayElevenDefaultArgs = ["data/intcode/hull-painter.txt"]
+
+dayElevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
+
+dayElevenTaskOne' prog = Map.size $ (\(_,_,hull) -> hull) $ HullPainter.runTwo $ outProg
+  where outProg = Intcode.runProg (0:outRobot) prog
+        outRobot = HullPainter.run outProg
+
+dayElevenTaskOne []         = dayElevenTaskOne dayElevenDefaultArgs
+dayElevenTaskOne [fileName] = (dayElevenParse fileName) >>= (print . dayElevenTaskOne')
+
+dayElevenTaskTwo' prog = HullPainter.draw $ HullPainter.runTwo outProg
+  where outProg = Intcode.runProg (1:outRobot) prog
+        outRobot = HullPainter.run outProg
+
+dayElevenTaskTwo []         = dayElevenTaskTwo dayElevenDefaultArgs
+dayElevenTaskTwo [fileName] = (dayElevenParse fileName) >>= (putStr . dayElevenTaskTwo')
