@@ -36,22 +36,15 @@ paint :: Coord -> Int -> Hull -> Hull
 paint coord colour hull = Map.insert coord colour hull
 
 
-run :: [Int] -> [Int]
+run :: [Int] -> [(Int,Robot)]
 run inputs = run' inputs ((0,0),North,Map.empty)
   where run' [] (coord,dir,hull) = []
-        run' (colourS:turnS:inputs) (coord,dir,hull) = newColour : run' inputs (coord',dir',hull')
+        run' (colourS:turnS:inputs) (coord,dir,hull) = (newColour,st') : run' inputs (coord',dir',hull')
           where hull' = paint coord colourS hull
                 dir' = turn dir turnS
                 coord' = move dir' coord
                 newColour = checkColour coord' hull'
-
-runTwo :: [Int] -> Robot
-runTwo inputs = run' inputs ((0,0),North,Map.empty)
-  where run' [] (coord,dir,hull) = (coord,dir,hull)
-        run' (colourS:turnS:inputs) (coord,dir,hull) = run' inputs (coord',dir',hull')
-          where hull' = paint coord colourS hull
-                dir' = turn dir turnS
-                coord' = move dir' coord
+                st' = (coord',dir',hull')
 
 draw (_,_,hull) = draw' (xMin,xMax) (yMin,yMax)
   where coords = Map.keys hull
@@ -59,5 +52,5 @@ draw (_,_,hull) = draw' (xMin,xMax) (yMin,yMax)
         xMax = fst $ maximumBy (comparing fst) coords
         yMin = snd $ minimumBy (comparing snd) coords
         yMax = snd $ maximumBy (comparing snd) coords
-        showColour c = if c == 0 then ' ' else '#'
+        showColour c = if c == 0 then ' ' else 'X'
         draw' (xMin,xMax) (yMin,yMax) = unlines $ reverse $ map (\y -> reverse $ map (\x -> showColour (checkColour (x,y) hull)) [xMin..xMax]) [yMin..yMax]

@@ -52,6 +52,8 @@ dispatch 9 1 = dayNineTaskOne
 dispatch 9 2 = dayNineTaskTwo
 dispatch 10 1 = dayTenTaskOne
 dispatch 10 2 = dayTenTaskTwo
+dispatch 11 1 = dayElevenTaskOne
+dispatch 11 2 = dayElevenTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -257,11 +259,13 @@ dayNineTaskOne' prog = last $ Intcode.runProg [1] prog
 
 dayNineTaskOne []         = dayNineTaskOne dayNineDefaultArgs
 dayNineTaskOne [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskOne')
+dayNineTaskOne _          = putStrLn "Usage: 9 1 [filename]"
 
 dayNineTaskTwo' prog = last $ Intcode.runProg [2] prog
 
 dayNineTaskTwo []         = dayNineTaskTwo dayNineDefaultArgs
 dayNineTaskTwo [fileName] = (dayNineParse fileName) >>= (print . dayNineTaskTwo')
+dayNineTaskTwo _          = putStrLn "Usage: 9 2 [filename]"
 
 --
 -- Day 10
@@ -275,6 +279,7 @@ dayTenTaskOne' m = snd $ Asteroid.maxVisibility m
 
 dayTenTaskOne []         = dayTenTaskOne dayTenDefaultArgs
 dayTenTaskOne [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskOne')
+dayTenTaskOne _          = putStrLn "Usage: 10 1 [filename]"
 
 dayTenTaskTwo' m = (100*x) + y
   where station = fst $ Asteroid.maxVisibility m
@@ -282,6 +287,7 @@ dayTenTaskTwo' m = (100*x) + y
 
 dayTenTaskTwo []         = dayTenTaskTwo dayTenDefaultArgs
 dayTenTaskTwo [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskTwo')
+dayTenTaskTwo _          = putStrLn "Usage: 10 2 [filename]"
 
 --
 -- Day 11robotOuts
@@ -291,16 +297,18 @@ dayElevenDefaultArgs = ["data/intcode/hull-painter.txt"]
 
 dayElevenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
 
-dayElevenTaskOne' prog = Map.size $ (\(_,_,hull) -> hull) $ HullPainter.runTwo $ outProg
-  where outProg = Intcode.runProg (0:outRobot) prog
+dayElevenTaskOne' prog = Map.size $ (\(_,_,hull) -> hull) $ snd $ last outRobot
+  where outProg = Intcode.runProg (0: (map fst outRobot)) prog
         outRobot = HullPainter.run outProg
 
 dayElevenTaskOne []         = dayElevenTaskOne dayElevenDefaultArgs
 dayElevenTaskOne [fileName] = (dayElevenParse fileName) >>= (print . dayElevenTaskOne')
+dayElevenTaskOne _          = putStrLn "Usage: 11 1 [filename]"
 
-dayElevenTaskTwo' prog = HullPainter.draw $ HullPainter.runTwo outProg
-  where outProg = Intcode.runProg (1:outRobot) prog
+dayElevenTaskTwo' prog = HullPainter.draw $ snd $ last outRobot
+  where outProg = Intcode.runProg (1: (map fst outRobot)) prog
         outRobot = HullPainter.run outProg
 
 dayElevenTaskTwo []         = dayElevenTaskTwo dayElevenDefaultArgs
 dayElevenTaskTwo [fileName] = (dayElevenParse fileName) >>= (putStr . dayElevenTaskTwo')
+dayElevenTaskTwo _          = putStrLn "Usage: 11 2 [filename]"
