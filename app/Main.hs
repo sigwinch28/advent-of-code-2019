@@ -10,6 +10,8 @@ import qualified Orbit
 import qualified SpaceImage
 import qualified Asteroid
 import qualified HullPainter
+import qualified NBody
+import qualified NBody.Parse as NBParse
 
 import Data.Functor ((<&>))
 import qualified Data.Map.Strict as Map
@@ -54,6 +56,8 @@ dispatch 10 1 = dayTenTaskOne
 dispatch 10 2 = dayTenTaskTwo
 dispatch 11 1 = dayElevenTaskOne
 dispatch 11 2 = dayElevenTaskTwo
+dispatch 12 1 = dayTwelveTaskOne
+dispatch 12 2 = dayTwelveTaskTwo
 dispatch d t = \_ -> putStrLn $ "Unknown task: day " ++ (show d) ++ " task " ++ (show t)
 
 --
@@ -290,7 +294,7 @@ dayTenTaskTwo [fileName] = (dayTenParse fileName) >>= (print . dayTenTaskTwo')
 dayTenTaskTwo _          = putStrLn "Usage: 10 2 [filename]"
 
 --
--- Day 11robotOuts
+-- Day 11
 --
 
 dayElevenDefaultArgs = ["data/intcode/hull-painter.txt"]
@@ -312,3 +316,23 @@ dayElevenTaskTwo' prog = HullPainter.draw $ snd $ last outRobot
 dayElevenTaskTwo []         = dayElevenTaskTwo dayElevenDefaultArgs
 dayElevenTaskTwo [fileName] = (dayElevenParse fileName) >>= (putStr . dayElevenTaskTwo')
 dayElevenTaskTwo _          = putStrLn "Usage: 11 2 [filename]"
+
+--
+-- Day 12
+--
+
+dayTwelveDefaultArgs = ["data/n-bodies/bodies.txt"]
+
+dayTwelveParse fileName = (openFileLazy fileName) <&> ((map NBParse.parseBody) . lines)
+
+dayTwelveTaskOne' bodies = sum $ map NBody.energy $ (flip (!!)) 1000 $ NBody.bodySteps bodies
+
+dayTwelveTaskOne []         = dayTwelveTaskOne dayTwelveDefaultArgs
+dayTwelveTaskOne [fileName] = (dayTwelveParse fileName) >>= (print . dayTwelveTaskOne')
+dayTwelveTaskOne _          = putStrLn "Usage: 12 1 [filename]"
+
+dayTwelveTaskTwo' bodies = NBody.bodiesPeriod bodies
+
+dayTwelveTaskTwo [] = dayTwelveTaskTwo dayTwelveDefaultArgs
+dayTwelveTaskTwo [fileName] = (dayTwelveParse fileName) >>= (print . dayTwelveTaskTwo')
+dayTwelveTaskTwo _          = putStrLn "Usage: 12 2 [filename]"

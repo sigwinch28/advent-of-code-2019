@@ -6,6 +6,9 @@ import Data.Char (ord)
 
 data Pixel = Black | White | Transparent deriving (Eq, Show)
 
+type Layer = [[Pixel]]
+type Image = [Layer]
+
 instance Semigroup Pixel where
   Transparent <> p2 = p2
   p1          <> p2 = p1
@@ -13,8 +16,6 @@ instance Semigroup Pixel where
 instance Monoid Pixel where
   mempty = Transparent
 
-type Layer = [[Pixel]]
-type Image = [Layer]
 
 parsePixel :: Char -> Pixel
 parsePixel '0' = Black
