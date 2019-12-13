@@ -26,24 +26,83 @@ dependencies:
 - unordered-containers
 - split
 
+ghc-options:
+- -threaded
+- -O2
+- -optc-Ofast
+- -optc-ffast-math
+- -fllvm
+cc-options:
+- -Ofast
+- -ffast-math
+
 library:
   source-dirs: src
 
 executables:
-  advent-of-code-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -O2
-    - -optc-Ofast
-    - -optc-ffast-math
-    - -fllvm
-    cc-options:
-    - -Ofast
-    - -ffast-math
+  day01:
+    main:        Main.hs
+    source-dirs: app/Day01
+    dependencies:
+    - advent-of-code
+  day02:
+    main:        Main.hs
+    source-dirs: app/Day02
+    dependencies:
+    - advent-of-code
+  day03:
+    main:        Main.hs
+    source-dirs: app/Day03
+    dependencies:
+    - advent-of-code
+  day04:
+    main:        Main.hs
+    source-dirs: app/Day04
+    dependencies:
+    - advent-of-code
+  day05:
+    main:        Main.hs
+    source-dirs: app/Day05
+    dependencies:
+    - advent-of-code
+  day06:
+    main:        Main.hs
+    source-dirs: app/Day06
+    dependencies:
+    - advent-of-code
+  day07:
+    main:        Main.hs
+    source-dirs: app/Day07
+    dependencies:
+    - advent-of-code
+  day08:
+    main:        Main.hs
+    source-dirs: app/Day08
+    dependencies:
+    - advent-of-code
+  day09:
+    main:        Main.hs
+    source-dirs: app/Day09
+    dependencies:
+    - advent-of-code
+  day10:
+    main:        Main.hs
+    source-dirs: app/Day10
+    dependencies:
+    - advent-of-code
+  day11:
+    main:        Main.hs
+    source-dirs: app/Day11
+    dependencies:
+    - advent-of-code
+  day12:
+    main:        Main.hs
+    source-dirs: app/Day12
+    dependencies:
+    - advent-of-code
+  day13:
+    main:        Main.hs
+    source-dirs: app/Day13
     dependencies:
     - advent-of-code
 
