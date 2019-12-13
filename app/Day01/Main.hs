@@ -3,7 +3,7 @@ import qualified Fuel
 import Data.Functor ((<&>))
 import qualified Parse
 
-defaultFileName = "data/fuel-calculations/module-masses.txt"
+defaultFileName = "data/day01.txt"
 
 main = Parse.defaultMain defaultFileName run
 
