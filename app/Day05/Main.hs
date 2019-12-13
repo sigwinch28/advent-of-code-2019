@@ -4,7 +4,7 @@ import Data.Functor ((<&>))
 
 import qualified Parse
 
-defaultFileName = "data/day05.txt
+defaultFileName = "data/day05.txt"
 
 main :: IO ()
 main = Parse.defaultMain defaultFileName run
