@@ -12,6 +12,7 @@ import qualified Asteroid
 import qualified HullPainter
 import qualified NBody
 import qualified NBody.Parse as NBParse
+import qualified ArcadeCabinet
 
 import Data.Functor ((<&>))
 import qualified Data.Map.Strict as Map
@@ -336,3 +337,25 @@ dayTwelveTaskTwo' bodies = NBody.bodiesPeriod bodies
 dayTwelveTaskTwo [] = dayTwelveTaskTwo dayTwelveDefaultArgs
 dayTwelveTaskTwo [fileName] = (dayTwelveParse fileName) >>= (print . dayTwelveTaskTwo')
 dayTwelveTaskTwo _          = putStrLn "Usage: 12 2 [filename]"
+
+--
+-- Day 13
+--
+
+dayThirteenDefaultArgs = ["data/intcode/arcade-cabinet.txt"]
+
+dayThirteenParse fileName = (openFileLazy fileName) <&> ((map read) . commaDelimited)
+
+dayThirteenTaskOne' prog = Map.size $ Map.filter (== 2) $ ArcadeCabinet.parse $ Intcode.runProg [] prog
+
+dayThirteenTaskOne []         = dayThirteenTaskOne dayThirteenDefaultArgs
+dayThirteenTaskOne [fileName] = (dayThirteenParse fileName) >>= (print . dayThirteenTaskOne')
+dayThirteenTaskOne _          = putStrLn "Usage: 13 1 [filename]"
+
+dayThirteenTaskTwo' (_:prog) = snd $ last $ playOut
+  where arcadeOut = Intcode.runProg (map fst playOut) (2:prog)
+        playOut = ArcadeCabinet.play $ ArcadeCabinet.parseList arcadeOut
+
+dayThirteenTaskTwo []         = dayThirteenTaskTwo dayThirteenDefaultArgs
+dayThirteenTaskTwo [fileName] = (dayThirteenParse fileName) >>= (print . dayThirteenTaskTwo')
+dayThirteenTaskTwo _          = putStrLn "Usage: 13 2 [filename]"
